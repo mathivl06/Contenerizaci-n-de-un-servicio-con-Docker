@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:18
+    env_file:
+      - path: .env
+        required: true
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      PG_DATA: ${PG_DATA}
+    networks:
+      - restaurant-network
+    volumes:
+      - type: volume
+        source: restaurant-db-volume
+        target: ${PG_VOLUME}
+        volume:
+          nocopy: true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      start_interval: 5s
+    restart: unless-stopped
+  flyway:
+    image: flyway/flyway
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    environment:
+      FLYWAY_URL: jdbc:postgresql://db:${POSTGRES_PORT}/${POSTGRES_DB}
+      FLYWAY_USER: ${POSTGRES_USER}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD}
+    command: migrate
+    volumes:
+      - type: bind
+        source: ./DataBaseScript
+        target: /flyway/sql
+    networks:
+      - restaurant-network
+    healthcheck:
+      test: ["CMD", "flyway", "info"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+      start_interval: 5s
+volumes:
+  restaurant-db-volume:
+    name: restaurant-db-volume
+networks:
+  restaurant-network:
+    name: restaurant-network
