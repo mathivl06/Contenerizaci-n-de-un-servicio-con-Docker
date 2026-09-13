@@ -23,7 +23,7 @@ app.get("/health", (req, res) => {
 
 });
 
-// TODO: Modificar con los datos q  ue vayamos a usar
+// TODO: Modificar con los datos que vayamos a usar
 
 app.get("/books", async (req, res) => {
 
