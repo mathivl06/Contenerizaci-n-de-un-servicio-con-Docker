@@ -1,9 +1,12 @@
 
-
 const express = require("express");
+const platillosRouter = require("./platillos/platillos.routes");
+
 const app = express();
+
 app.use(express.json());
 
+app.use("/paTOSrest/platillos", platillosRouter);
 
 
 app.get("/health", (req, res) => {
