@@ -1,19 +1,10 @@
 
 
-const express = requiere("express")
-const { Pool } = require("pg");
-
+const express = require("express");
 const app = express();
-
 app.use(express.json());
 
-const pool = new Pool({
-    host: "localhost",
-    port: 5432,
-    database: "booksdb", // TODO: Cambiar por los datos de nuestra DB
-    user: "postgres",
-    password: "1234"
-});
+
 
 app.get("/health", (req, res) => {
 
@@ -47,6 +38,6 @@ app.post("/books", async (req, res) => {
     res.status(201).json(result.rows[0]);
 });
 
-app.listen(3000, () => {
-    console.log("Server running");
-});
+
+
+module.exports = app;

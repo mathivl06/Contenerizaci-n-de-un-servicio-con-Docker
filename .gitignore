@@ -1,1 +1,4 @@
 .env
+/.devcontainer/
+/compose.dev.yml
+/node_modules/
