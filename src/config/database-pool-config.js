@@ -9,4 +9,6 @@ const databasePool = new Pool({
     password: appEnvConfig.database.password
 });
 
-module.exports = databasePool;
+module.exports = {
+    databasePool
+};
