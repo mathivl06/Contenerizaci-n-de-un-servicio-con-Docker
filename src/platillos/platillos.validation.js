@@ -16,6 +16,14 @@ const getAllPlatillosValidation = [
         .withMessage("El límite debe estar entre 1 y 50")
 ];
 
+const getPlatillosByIdValidation = [
+    param("id")
+        .trim()
+        .isInt({ min: 1 })
+        .toInt()
+];
+
 module.exports = {
-    getAllPlatillosValidation
+    getAllPlatillosValidation,
+    getPlatillosByIdValidation
 };

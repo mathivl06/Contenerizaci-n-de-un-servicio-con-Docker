@@ -10,6 +10,18 @@ async function getAllPlatillos(req, res, next){
     }
 }
 
+async function getPlatilloById(req, res, next){
+    try{
+        const { id } = req.params;
+        const existingPlatillo = await platillosService.findPlatilloById({ id });
+        res.status(200).json(existingPlatillo);
+    } catch(error){
+        next(error);
+    }
+}
+
+
 module.exports = {
-    getAllPlatillos
+    getAllPlatillos,
+    getPlatilloById
 };

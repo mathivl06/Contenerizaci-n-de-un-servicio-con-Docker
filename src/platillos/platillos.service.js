@@ -9,6 +9,18 @@ async function findAllPlatillos(filters) {
     return existingPlatillos;
 }
 
+async function findPlatilloById(parameters) {
+    const existingPlatillo = await platillosRepository.findPlatilloById(parameters);
+
+    if (!existingPlatillo.length){
+        throw new Error("No hay platillos disponibles");
+    }
+    return existingPlatillo;
+}
+
+
+
 module.exports = {
-    findAllPlatillos
+    findAllPlatillos,
+    findPlatilloById
 };
