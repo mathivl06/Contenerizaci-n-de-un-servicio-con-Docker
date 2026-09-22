@@ -1,3 +1,4 @@
+const { DatabaseError } = require("pg");
 const platillosRepository = require("./platillos.repository");
 
 async function findAllPlatillos(filters) {
@@ -18,9 +19,16 @@ async function findPlatilloById(parameters) {
     return existingPlatillo;
 }
 
-
+async function createPlatillo(parameters) {
+    try{
+        return await platillosRepository.createPlatillo(parameters);
+    } catch(error){
+        throw new DatabaseError("No fue posible crear el platillo", error);
+    }
+}
 
 module.exports = {
     findAllPlatillos,
-    findPlatilloById
+    findPlatilloById,
+    createPlatillo
 };

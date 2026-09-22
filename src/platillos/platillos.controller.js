@@ -20,8 +20,20 @@ async function getPlatilloById(req, res, next){
     }
 }
 
+async function postPlatillo(req, res, next){
+    try{
+        const body = req.body;
+        const result = await platillosService.createPlatillo(body);
+        res.status(201).json(result);
+    } catch(error){
+        next(error);
+    }
+
+}
+
 
 module.exports = {
     getAllPlatillos,
-    getPlatilloById
+    getPlatilloById,
+    postPlatillo
 };
