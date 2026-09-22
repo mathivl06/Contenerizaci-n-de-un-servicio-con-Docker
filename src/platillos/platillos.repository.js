@@ -21,8 +21,8 @@ async function findAllPlatillos({sort, limit}) {
         baseQuery +=
             `
             LIMIT $1
-            `
-        values.push(limit)
+            `;
+        values.push(limit);
     }
     const { rows } = await databasePool.query(baseQuery, values);
     return rows;
@@ -37,12 +37,24 @@ async function findPlatilloById({id}){
             precio
         FROM Platillos
         WHERE platillo_id = $1
-        `
+        `;
     const {rows} = await databasePool.query(query, [id]);
     return rows
 }
 
+async function createPlatillo({ nombre, descripcion, precio }){
+    let query =
+        `INSERT INTO Platillos (nombre, descripcion, precio)
+        VALUES ($1, $2, $3)
+        RETURNING *;
+        `;
+    let values = [nombre, descripcion, precio]
+    const { rows } = await databasePool.query(query, values)
+    return rows[0];
+}
+
 module.exports = {
     findAllPlatillos,
-    findPlatilloById
+    findPlatilloById,
+    createPlatillo
 };
