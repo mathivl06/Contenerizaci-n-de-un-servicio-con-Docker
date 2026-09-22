@@ -4,7 +4,7 @@ const SORT_FIELDS = {
     precio: "precio"
 }
 
-async function findAllPlatillos({ sort, limit}) {
+async function findAllPlatillos({sort, limit}) {
     let values = [];
     let baseQuery = 
         `SELECT
@@ -28,6 +28,21 @@ async function findAllPlatillos({ sort, limit}) {
     return rows;
 }
 
+async function findPlatilloById({id}){
+    let query = 
+        `SELECT
+            platillo_id,
+            nombre,
+            descripcion,
+            precio
+        FROM Platillos
+        WHERE platillo_id = $1
+        `
+    const {rows} = await databasePool.query(query, [id]);
+    return rows
+}
+
 module.exports = {
-    findAllPlatillos
+    findAllPlatillos,
+    findPlatilloById
 };
