@@ -1,4 +1,4 @@
-const { DatabaseError } = require("pg");
+
 const { NotFoundError } = require("../errors/NotFoundError");
 const platillosRepository = require("./platillos.repository");
 
@@ -14,18 +14,14 @@ async function findAllPlatillos(filters) {
 async function findPlatilloById(parameters) {
     const existingPlatillo = await platillosRepository.findPlatilloById(parameters);
 
-    if (!existingPlatillo.length){
+    if (!existingPlatillo){
         throw new NotFoundError("Platillo no encontrado")
     }
     return existingPlatillo;
 }
 
 async function createPlatillo(parameters) {
-    try{
-        return await platillosRepository.createPlatillo(parameters);
-    } catch(error){
-        throw new DatabaseError("No fue posible crear el platillo", error);
-    }
+    return await platillosRepository.createPlatillo(parameters);
 }
 
 async function deletePlatilloById(parameters) {
@@ -36,9 +32,19 @@ async function deletePlatilloById(parameters) {
     }
 }
 
+async function updatePlatilloById(parameters) {
+    const updatedPlatillo = await platillosRepository.updatePlatilloById(parameters);
+
+    if (!updatedPlatillo) {
+        throw new NotFoundError("Platillo no encontrado");
+    }
+    return updatedPlatillo;
+}
+
 module.exports = {
     findAllPlatillos,
     findPlatilloById,
     createPlatillo,
-    deletePlatilloById
+    deletePlatilloById,
+    updatePlatilloById
 };

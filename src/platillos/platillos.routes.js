@@ -8,5 +8,6 @@ platillosRouter.get("/", platillosValidation.getAllPlatillosValidation, validate
 platillosRouter.get("/:id", platillosValidation.getPlatillosByIdValidation, validate, platillosController.getPlatilloById);
 platillosRouter.post("/", platillosValidation.postPlatillo, validate, platillosController.postPlatillo);
 platillosRouter.delete("/:id", platillosValidation.deletePlatilloByIdValidation, validate, platillosController.deletePlatillo);
+platillosRouter.patch("/:id", platillosValidation.patchPlatilloValidation, validate, platillosController.patchPlatillo);
 
 module.exports = platillosRouter;

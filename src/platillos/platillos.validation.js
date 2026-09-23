@@ -112,9 +112,84 @@ const deletePlatilloByIdValidation = [
         .toInt()
 ];
 
+const patchPlatilloValidation = [
+    param("id")
+        .trim()
+        .isInt({ min: 1 })
+        .withMessage("El id debe ser un entero positivo")
+        .bail()
+        .toInt(),
+
+    body("nombre")
+        .optional()
+        .isString()
+        .withMessage("El nombre debe ser un texto")
+        .bail()
+        .trim()
+        .notEmpty()
+        .withMessage("El nombre no puede estar vacío")
+        .bail()
+        .isLength({ max: 50 })
+        .withMessage("El nombre no puede superar los 50 caracteres"),
+
+    body("descripcion")
+        .optional()
+        .isString()
+        .withMessage("La descripción debe ser un texto")
+        .bail()
+        .trim()
+        .notEmpty()
+        .withMessage("La descripción no puede estar vacía")
+        .bail()
+        .isLength({ max: 400 })
+        .withMessage("La descripción no puede superar los 400 caracteres"),
+
+    body("precio")
+        .optional()
+        .isDecimal({ decimal_digits: "0,2" })
+        .withMessage("El precio debe tener como máximo dos decimales")
+        .bail()
+        .custom(value => {
+            const precio = Number(value);
+
+            if (precio < 0) {
+                throw new Error("El precio no puede ser negativo");
+            }
+
+            if (precio >= 10000000000) {
+                throw new Error("El precio supera el límite permitido");
+            }
+
+            return true;
+        })
+        .toFloat(),
+
+    body().custom((_, { req }) => {
+        const validFields = ["nombre", "descripcion", "precio"];
+        const received = Object.keys(req.body);
+
+        if (received.length === 0) {
+            throw new Error("Debe enviar al menos un campo");
+        }
+
+        const invalidFields = received.filter(
+            key => !validFields.includes(key)
+        );
+
+        if (invalidFields.length > 0) {
+            throw new Error(
+                `Campos no permitidos: ${invalidFields.join(", ")}`
+            );
+        }
+
+        return true;
+    })
+];
+
 module.exports = {
     getAllPlatillosValidation,
     getPlatillosByIdValidation,
     postPlatillo,
-    deletePlatilloByIdValidation
+    deletePlatilloByIdValidation,
+    patchPlatilloValidation
 };
