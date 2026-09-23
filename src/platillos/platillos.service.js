@@ -27,8 +27,17 @@ async function createPlatillo(parameters) {
     }
 }
 
+async function deletePlatilloById(parameters) {
+    const rowCount = await platillosRepository.deletePlatilloById(parameters);
+    
+    if (rowCount === 0){
+        throw new Error("No se encontró el platillo")
+    }
+}
+
 module.exports = {
     findAllPlatillos,
     findPlatilloById,
-    createPlatillo
+    createPlatillo,
+    deletePlatilloById
 };

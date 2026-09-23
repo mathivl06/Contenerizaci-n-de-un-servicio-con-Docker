@@ -53,8 +53,17 @@ async function createPlatillo({ nombre, descripcion, precio }){
     return rows[0];
 }
 
+async function deletePlatilloById({ id }) {
+    const { rowCount } = await databasePool.query(
+        `DELETE FROM Platillos
+        WHERE platillo_id = $1;`,[id]
+    );
+    return rowCount;
+}
+
 module.exports = {
     findAllPlatillos,
     findPlatilloById,
-    createPlatillo
+    createPlatillo,
+    deletePlatilloById
 };
