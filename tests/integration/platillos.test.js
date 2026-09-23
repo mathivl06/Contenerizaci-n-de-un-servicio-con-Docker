@@ -21,7 +21,7 @@ test("GET /platillos/id responde correctamente", async () => {
 
     expect(response.status).toBe(200);
 
-    expect(response.body[0].platillo_id).toBe(2);
+    expect(response.body.platillo_id).toBe(2);
 
 });
 
@@ -31,9 +31,8 @@ test("GET /platillos responde correctamente", async () => {
         .get("/paTOSrest/platillos");
 
     expect(response.status).toBe(200);
-    console.log(response.body)
+    //console.log(response.body)
     expect(response.body[0].platillo_id).toBe(1);
-
 });
 
 test("POST de un platillo responde correctamente", async () => {
@@ -50,4 +49,24 @@ test("POST de un platillo responde correctamente", async () => {
 
     expect(response.body.nombre).toBe("Pato Casado");
 
+});
+
+test("DELETE /platillos/id responde correctamente", async () => {
+
+    const response = await request(app)
+        .delete("/paTOSrest/platillos/9");
+
+    expect(response.status).toBe(204);
+    //console.log(response.body)
+});
+
+test("PATCH de un platillo responde correctamente", async () => {
+    const response = await request(app)
+        .patch("/paTOSrest/platillos/2")
+        .send({
+            nombre: "Pato Pasta Blanca Actualizado"
+        });
+
+    expect(response.status).toBe(200);
+    expect(response.body.nombre).toBe("Pato Pasta Blanca Actualizado");
 });
