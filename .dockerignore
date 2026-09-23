@@ -1,0 +1,8 @@
+.git/
+.devcontainer/
+.gitignore
+.env*
+DataBaseScript/
+README.md
+compose*.yml
+node_modules/

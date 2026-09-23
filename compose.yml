@@ -1,11 +1,6 @@
 services:
   db:
     image: postgres:18
-    ports:
-      - "5432:5432"
-    env_file:
-      - path: .env
-        required: true
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -51,6 +46,32 @@ services:
       retries: 5
       start_period: 10s
       start_interval: 5s
+  app:
+    image: patos-rest-api:1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_DB_USER: ${POSTGRES_USER}
+      APP_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB: ${POSTGRES_DB}
+      APP_DB_PORT: ${POSTGRES_PORT}
+      APP_PORT: ${APP_PORT}
+      APP_DB_HOST: ${APP_DB_HOST}
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    networks:
+      - restaurant-network  
 volumes:
   restaurant-db-volume:
     name: restaurant-db-volume
