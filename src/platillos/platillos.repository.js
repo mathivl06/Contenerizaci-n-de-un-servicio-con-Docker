@@ -39,7 +39,7 @@ async function findPlatilloById({id}){
         WHERE platillo_id = $1
         `;
     const {rows} = await databasePool.query(query, [id]);
-    return rows
+    return rows[0];
 }
 
 async function createPlatillo({ nombre, descripcion, precio }){
@@ -61,9 +61,46 @@ async function deletePlatilloById({ id }) {
     return rowCount;
 }
 
+async function updatePlatilloById({ id, nombre, descripcion, precio }) {
+    const fields = [];
+    const values = [];
+
+    if (nombre !== undefined) {
+        values.push(nombre);
+        fields.push(`nombre = $${values.length}`);
+    }
+
+    if (descripcion !== undefined) {
+        values.push(descripcion);
+        fields.push(`descripcion = $${values.length}`);
+    }
+
+    if (precio !== undefined) {
+        values.push(precio);
+        fields.push(`precio = $${values.length}`);
+    }
+
+    values.push(id);
+
+    const query = `
+        UPDATE Platillos
+        SET ${fields.join(", ")}
+        WHERE platillo_id = $${values.length}
+        RETURNING *;
+    `;
+
+    const { rows } = await databasePool.query(
+        query,
+        values
+    );
+
+    return rows[0];
+}
+
 module.exports = {
     findAllPlatillos,
     findPlatilloById,
     createPlatillo,
-    deletePlatilloById
+    deletePlatilloById,
+    updatePlatilloById
 };

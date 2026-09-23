@@ -41,10 +41,22 @@ async function deletePlatillo(req, res, next) {
     }
 }
 
+async function patchPlatillo(req, res, next) {
+    try {
+        const { id } = req.params;
+        const body = req.body;
+        const updatedPlatillo = await platillosService.updatePlatilloById({id,...body});
+        res.status(200).json(updatedPlatillo);
+    } catch (error) {
+        next(error);
+    }
+}
+
 
 module.exports = {
     getAllPlatillos,
     getPlatilloById,
     postPlatillo,
-    deletePlatillo
+    deletePlatillo,
+    patchPlatillo
 };
