@@ -1,11 +1,12 @@
 const { DatabaseError } = require("pg");
+const { NotFoundError } = require("../errors/NotFoundError");
 const platillosRepository = require("./platillos.repository");
 
 async function findAllPlatillos(filters) {
     const existingPlatillos = await platillosRepository.findAllPlatillos(filters);
 
     if (!existingPlatillos.length){
-        throw new Error("No hay platillos disponibles");
+        throw new NotFoundError("No hay platillos disponibles");
     }
     return existingPlatillos;
 }
@@ -14,7 +15,7 @@ async function findPlatilloById(parameters) {
     const existingPlatillo = await platillosRepository.findPlatilloById(parameters);
 
     if (!existingPlatillo.length){
-        throw new Error("No hay platillos disponibles");
+        throw new NotFoundError("Platillo no encontrado")
     }
     return existingPlatillo;
 }
@@ -31,7 +32,7 @@ async function deletePlatilloById(parameters) {
     const rowCount = await platillosRepository.deletePlatilloById(parameters);
     
     if (rowCount === 0){
-        throw new Error("No se encontró el platillo")
+        throw new NotFoundError("Platillo no encontrado")
     }
 }
 
