@@ -31,9 +31,20 @@ async function postPlatillo(req, res, next){
 
 }
 
+async function deletePlatillo(req, res, next) {
+    try{
+        const { id } = req.params;
+        await platillosService.deletePlatilloById({ id });
+        res.sendStatus(204)
+    } catch(error){
+        next(error);
+    }
+}
+
 
 module.exports = {
     getAllPlatillos,
     getPlatilloById,
-    postPlatillo
+    postPlatillo,
+    deletePlatillo
 };

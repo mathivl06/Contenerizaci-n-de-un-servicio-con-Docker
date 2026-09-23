@@ -31,6 +31,8 @@ const getPlatillosByIdValidation = [
     param("id")
         .trim()
         .isInt({ min: 1 })
+        .withMessage("The id must be a valid integer starting from 1")
+        .bail()
         .toInt()
 ];
 
@@ -98,8 +100,21 @@ const postPlatillo = [
     })
 ]
 
+const deletePlatilloByIdValidation = [
+    param("id")
+        .exists()
+        .withMessage("An id must be provided")
+        .bail()
+        .trim()
+        .isInt({ min: 1 })
+        .withMessage("The id must be a valid integer starting from 1")
+        .bail()
+        .toInt()
+];
+
 module.exports = {
     getAllPlatillosValidation,
     getPlatillosByIdValidation,
-    postPlatillo
+    postPlatillo,
+    deletePlatilloByIdValidation
 };
