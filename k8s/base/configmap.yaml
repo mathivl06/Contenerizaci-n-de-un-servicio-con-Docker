@@ -12,3 +12,4 @@ data:
   PG_DATA: /var/lib/postgresql/18/docker
   PGDATA: /var/lib/postgresql/18/docker
   KC_HEALTH_ENABLED: "true"
+  KEYCLOAK_HOSTNAME: localhost

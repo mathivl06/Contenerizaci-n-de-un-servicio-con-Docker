@@ -194,3 +194,7 @@ docker compose up --build
 ```
 
 Consulte nuevamente `GET /paTOSrest/platillos`. El registro debe permanecer porque PostgreSQL utiliza el volumen `restaurant-db-volume`. Para apagar y eliminar también los datos persistidos, utilice `docker compose down -v`.
+
+## Kubernetes
+
+La migración a Kubernetes con `kind` y Kustomize está documentada en [`k8s/README.md`](k8s/README.md).

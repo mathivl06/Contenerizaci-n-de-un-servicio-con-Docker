@@ -43,6 +43,11 @@ spec:
                 configMapKeyRef:
                   name: patos-config
                   key: KC_HEALTH_ENABLED
+            - name: KC_HOSTNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: KEYCLOAK_HOSTNAME
           volumeMounts:
             - name: keycloak-realm
               mountPath: /opt/keycloak/data/import

@@ -53,6 +53,8 @@ kind load docker-image patos-rest-api:1 --name patos-cluster
 
 El `Deployment` usa `imagePullPolicy: Never` para que Kubernetes use la imagen local cargada en `kind`.
 
+En `k8s/base/configmap.yaml`, `KEYCLOAK_HOSTNAME` queda como `localhost` para que el acceso por `kubectl port-forward service/keycloak 8080:8080` coincida con el hostname publico de Keycloak en el entorno local.
+
 ## 3. Crear el namespace
 
 ```bash
@@ -66,12 +68,12 @@ No se versionan credenciales reales. La plantilla esta en `k8s/base/secret.examp
 ```bash
 kubectl create secret generic patos-secret \
   --namespace patos-rest \
-  --from-literal=POSTGRES_USER='CAMBIAR' \
-  --from-literal=POSTGRES_PASSWORD='CAMBIAR' \
-  --from-literal=APP_DB_USER='CAMBIAR' \
-  --from-literal=APP_DB_PASSWORD='CAMBIAR' \
-  --from-literal=KEYCLOAK_ADMIN_USERNAME='CAMBIAR' \
-  --from-literal=KEYCLOAK_ADMIN_PASSWORD='CAMBIAR'
+  --from-literal=POSTGRES_USER='paTOS' \
+  --from-literal=POSTGRES_PASSWORD='paTOrestaurante!1' \
+  --from-literal=APP_DB_USER='paTOS' \
+  --from-literal=APP_DB_PASSWORD='paTOrestaurante!1' \
+  --from-literal=KEYCLOAK_ADMIN_USERNAME='paTOS' \
+  --from-literal=KEYCLOAK_ADMIN_PASSWORD='paTOS'
 ```
 
 Para este proyecto, `APP_DB_USER` y `APP_DB_PASSWORD` deben coincidir con `POSTGRES_USER` y `POSTGRES_PASSWORD`, porque la API se conecta a la misma base de datos creada por PostgreSQL.
@@ -199,7 +201,7 @@ Luego abrir:
 http://localhost:8080
 ```
 
-Keycloak se inicia con `quay.io/keycloak/keycloak:26.7.4`, `KC_HEALTH_ENABLED=true` e importa el realm existente con `start-dev --import-realm`.
+Keycloak se inicia con `quay.io/keycloak/keycloak:26.7.4`, `KC_HEALTH_ENABLED=true`, `KC_HOSTNAME` tomado del `ConfigMap` e importa el realm existente con `start-dev --import-realm`.
 
 Nota: al inspeccionar el codigo actual de la API, solo se encontraron variables `APP_DB_*` y `APP_PORT`; no hay variables OIDC/JWT ni middleware de validacion de tokens en `src/`. Esta migracion conserva el comportamiento existente y despliega Keycloak igual que Compose, sin reescribir la aplicacion.
 
