@@ -90,107 +90,148 @@ GET /paTOSrest/platillos?sort=precio&limit=2
 
 ## Pruebas unitarias y de integración
 
-Las pruebas se encuentran en el directorio `tests/`. Las pruebas unitarias validan la lógica de los campos de `platillos.validation.js`. Las pruebas de integración ejercitan los endpoints contra la aplicación y requieren que PostgreSQL y Flyway estén disponibles.
+Las pruebas se encuentran en el directorio `tests/` y se ejecutan dentro de un contenedor independiente definido por el servicio `test-runner` de Compose. Este servicio utiliza `Dockerfile.test`, instala también las dependencias de desarrollo y espera a que la API y Keycloak estén saludables antes de comenzar.
 
-Para ejecutar todas las pruebas mediante el script definido en `package.json` se utiliza:
+El script principal ejecuta primero las pruebas unitarias y luego las de integración:
 
 ```bash
 npm test
 ```
 
-También es posible ejecutar cada conjunto por separado:
+Los scripts disponibles son:
 
 ```bash
-npx jest tests/unit
-npx jest tests/integration
+npm run test:unit
+npm run test:integration
 ```
 
-Las pruebas de integración deben ejecutarse con la pila levantada mediante Docker Compose. El flujo esperado cubre `/health`, lectura de platillos y operaciones de creación, actualización y eliminación.
+Las pruebas unitarias validan la lógica de los campos de `platillos.validation.js`, incluyendo cuerpos vacíos e identificadores inválidos. Las pruebas de integración utilizan Supertest contra la aplicación en Compose y cubren:
 
-## Puesta en marcha del sistema
+- `GET /paTOSrest/health` y las consultas públicas de platillos.
+- Obtención automática de tokens de Keycloak para `paTOSadmin` y `paTOclient`.
+- Rechazo de operaciones protegidas sin token (`401`).
+- Rechazo de un token válido sin el rol `patos_admin` (`403`).
+- Creación, actualización y eliminación con el token administrativo (`201`, `200` y `204`).
+
+Para ejecutar todas las pruebas contra la pila completa, desde la raíz del proyecto utilice:
+
+```bash
+docker compose --profile test run --rm test-runner
+```
+
+El perfil `test` crea el contenedor temporal, ejecuta `npm test` y lo elimina al terminar. Compose proporciona al runner las variables internas `APP_URL` y `KEYCLOAK_URL`, por lo que las pruebas se conectan a los servicios por sus nombres dentro de la red de Compose.
+
+## Flujo para correr la app
 
 ### Requisitos previos
 
 - Docker Engine instalado y en ejecución.
 - Docker Compose disponible mediante `docker compose`.
 - Puertos `2000` y `8080` disponibles en la máquina anfitriona.
+- Postman, si se desea demostrar manualmente las rutas y la autenticación.
 
-### Configuración
+Después de clonar el repositorio, entre en la carpeta del proyecto:
 
-Desde la carpeta `Contenerizaci-n-de-un-servicio-con-Docker/`, copie el archivo de ejemplo:
+```bash
+cd Contenerizaci-n-de-un-servicio-con-Docker
+```
+
+Copie el archivo de variables de entorno:
 
 ```bash
 cp .env.example .env
 ```
 
-Complete `.env` con la configuración local de PostgreSQL, la aplicación y Keycloak. Como mínimo, `APP_DB_HOST` debe ser `db`, porque ese es el nombre del servicio dentro de la red de Compose; no debe utilizarse `localhost` para la conexión de la aplicación con PostgreSQL.
+El archivo `.env.example` contiene los valores de desarrollo necesarios para PostgreSQL, la API y Keycloak. No es necesario modificar el host de PostgreSQL: la aplicación utiliza `db`, que es el nombre del servicio dentro de la red de Compose.
 
 ### Arranque
 
-La primera vez, construya la imagen de la API y levante la pila completa con:
+Construya la imagen de la API y levante la pila en segundo plano:
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-Compose inicia los servicios `db`, `flyway`, `keycloak` y `app`. PostgreSQL utiliza el volumen `restaurant-db-volume`. Flyway aplica automáticamente los scripts de `DataBaseScript/` y la aplicación espera a que la migración finalice correctamente.
+La pila contiene PostgreSQL, Flyway, Keycloak y la API. Flyway aplica automáticamente las migraciones de `DataBaseScript/` después de que PostgreSQL esté saludable. La API se considera saludable mediante `GET /paTOSrest/health` y espera a que Flyway finalice correctamente.
 
-### Verificación
-
-Con los contenedores en ejecución, compruebe la salud de la API:
+Compruebe el estado de los servicios con:
 
 ```bash
-curl http://localhost:2000/paTOSrest/health
-curl http://localhost:2000/paTOSrest/ready
-curl http://localhost:2000/paTOSrest/platillos
+docker compose ps
 ```
 
-La primera solicitud debe devolver `200` con estado `OK`; la segunda debe devolver `200` con estado `Ready` cuando PostgreSQL esté disponible.
+### Ejecución de pruebas
 
-### Autenticación con Keycloak
+Con la pila levantada, ejecute el runner de pruebas:
 
-Keycloak importa el realm `paTOS` y expone su servicio en el puerto `8080`. El cliente utilizado por la API es `patos-rest-api`. La autenticación se realiza mediante Postman y utiliza el flujo de credenciales del usuario.
+```bash
+docker compose --profile test run --rm test-runner
+```
 
-Para obtener el token en Postman:
+El comando debe terminar con todas las pruebas unitarias y de integración aprobadas.
 
-1. Cree una solicitud `POST` hacia:
-	`http://localhost:8080/realms/paTOS/protocol/openid-connect/token`
-2. En la pestaña **Body**, seleccione **x-www-form-urlencoded**.
-3. Agregue los siguientes campos:
+### Verificación manual con Postman
 
-	| Clave | Valor |
-	| --- | --- |
-	| `client_id` | `patos-rest-api` |
-	| `grant_type` | `password` |
-	| `username` | `paTOSadmin` |
-	| `password` | `paTOS` |
+Para comprobar la API manualmente, cree las siguientes solicitudes:
 
-4. Envíe la solicitud y copie el valor de `access_token` de la respuesta JSON.
+| Método | URL | Resultado esperado |
+| --- | --- | --- |
+| `GET` | `http://localhost:2000/paTOSrest/health` | `200` y estado `OK`. |
+| `GET` | `http://localhost:2000/paTOSrest/ready` | `200` y estado `Ready`. |
+| `GET` | `http://localhost:2000/paTOSrest/platillos` | `200` con la lista almacenada en PostgreSQL. |
 
-Para consumir una ruta protegida:
+Para las rutas protegidas, obtenga primero un token desde Keycloak mediante `POST` a `http://localhost:8080/realms/paTOS/protocol/openid-connect/token`. En **Body**, seleccione **x-www-form-urlencoded** y utilice:
 
-1. Cree la solicitud correspondiente, por ejemplo `POST` hacia `http://localhost:2000/paTOSrest/platillos`.
-2. En la pestaña **Authorization**, seleccione el tipo **Bearer Token**.
-3. Pegue el valor de `access_token` en el campo **Token**.
-4. En la pestaña **Body**, seleccione **raw**, formato **JSON**, y envíe un cuerpo como el siguiente:
+| Clave | Valor |
+| --- | --- |
+| `client_id` | `patos-rest-api` |
+| `grant_type` | `password` |
+| `username` | `paTOSadmin` |
+| `password` | `paTOS` |
+
+Copie `access_token` y configúrelo como **Bearer Token** en una solicitud `POST`, `PATCH` o `DELETE` a la API. Por ejemplo, para crear un platillo:
 
 ```json
 {
   "nombre": "Pato Casado",
-  "descripcion": "Arroz, frijoles y ensalada",
+  "descripcion": "Arroz, frijoles, maduro y ensalada",
   "precio": 4500
 }
 ```
 
-El usuario `paTOSadmin` posee el rol `patos_admin`, por lo que la solicitud responde `201`. Una solicitud protegida sin token o con un token inválido responde `401`; un token válido sin el rol requerido responde `403`.
+La creación debe responder `201`. Una solicitud sin token responde `401` y una solicitud con un token de `paTOclient`, que no posee el rol `patos_admin`, responde `403`.
 
-### Persistencia y apagado
+### Persistencia
 
-Después de crear un platillo, detenga y vuelva a levantar los servicios sin eliminar los volúmenes:
+Para comprobar que PostgreSQL conserva los datos:
+
+1. Cree un platillo mediante `POST` y guarde su `platillo_id`.
+2. Detenga los contenedores sin eliminar los volúmenes:
 
 ```bash
 docker compose down
-docker compose up --build
 ```
 
-Consulte nuevamente `GET /paTOSrest/platillos`. El registro debe permanecer porque PostgreSQL utiliza el volumen `restaurant-db-volume`. Para apagar y eliminar también los datos persistidos, utilice `docker compose down -v`.
+3. Vuelva a levantar la aplicación:
+
+```bash
+docker compose up -d
+```
+
+4. Consulte `GET http://localhost:2000/paTOSrest/platillos/{id}` en Postman. El platillo debe seguir existiendo.
+
+Los datos persisten porque PostgreSQL utiliza el volumen `restaurant-db-volume` declarado en Compose.
+
+### Apagado y eliminación de datos
+
+Para detener la aplicación conservando los datos:
+
+```bash
+docker compose down
+```
+
+Para detenerla y eliminar también el volumen de PostgreSQL:
+
+```bash
+docker compose down -v
+```
