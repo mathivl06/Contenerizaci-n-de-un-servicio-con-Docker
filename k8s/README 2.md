@@ -53,8 +53,6 @@ kind load docker-image patos-rest-api:1 --name patos-cluster
 
 El `Deployment` usa `imagePullPolicy: Never` para que Kubernetes use la imagen local cargada en `kind`.
 
-En `k8s/base/configmap.yaml`, `KEYCLOAK_HOSTNAME` queda como `localhost` para que el acceso por `kubectl port-forward service/keycloak 8080:8080` coincida con el hostname publico de Keycloak en el entorno local.
-
 ## 3. Crear el namespace
 
 ```bash
@@ -68,12 +66,12 @@ No se versionan credenciales reales. La plantilla esta en `k8s/base/secret.examp
 ```bash
 kubectl create secret generic patos-secret \
   --namespace patos-rest \
-  --from-literal=POSTGRES_USER='paTOS' \
-  --from-literal=POSTGRES_PASSWORD='paTOrestaurante!1' \
-  --from-literal=APP_DB_USER='paTOS' \
-  --from-literal=APP_DB_PASSWORD='paTOrestaurante!1' \
-  --from-literal=KEYCLOAK_ADMIN_USERNAME='paTOS' \
-  --from-literal=KEYCLOAK_ADMIN_PASSWORD='paTOS'
+  --from-literal=POSTGRES_USER='CAMBIAR' \
+  --from-literal=POSTGRES_PASSWORD='CAMBIAR' \
+  --from-literal=APP_DB_USER='CAMBIAR' \
+  --from-literal=APP_DB_PASSWORD='CAMBIAR' \
+  --from-literal=KEYCLOAK_ADMIN_USERNAME='CAMBIAR' \
+  --from-literal=KEYCLOAK_ADMIN_PASSWORD='CAMBIAR'
 ```
 
 Para este proyecto, `APP_DB_USER` y `APP_DB_PASSWORD` deben coincidir con `POSTGRES_USER` y `POSTGRES_PASSWORD`, porque la API se conecta a la misma base de datos creada por PostgreSQL.
@@ -172,7 +170,6 @@ Crear un platillo:
 ```bash
 curl -X POST http://localhost:2000/paTOSrest/platillos \
   -H 'Content-Type: application/json' \
-  -H 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5QlJsemJTdHlxSEN2VERQdy1iYUZ1VUFJZWk0OHBlZDlVQlBPNzVwUmY0In0.eyJleHAiOjE3OTAyMzI5MzMsImlhdCI6MTc5MDIzMjYzMywianRpIjoib25ydHJvOjhmYTBmYzQxLTVjZjEtYzgzMy1iYmQ5LTY5ZGUzZGUyYjRmNyIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC9yZWFsbXMvcGFUT1MiLCJzdWIiOiI3YmUxYzBlYS1jM2M3LTRkZDktOWQ4NC02ZWIzMTVmODBiODgiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJwYXRvcy1yZXN0LWFwaSIsInNpZCI6ImdJdVdodWM1Si1kSmtNWGxMT3BMWlVYSyIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsicGF0b3NfYWRtaW4iXX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoicGFUT1MgYWRtaW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYXRvc2FkbWluIiwiZ2l2ZW5fbmFtZSI6InBhVE9TIiwiZmFtaWx5X25hbWUiOiJhZG1pbiIsImVtYWlsIjoicGF0b3NhZG1pbkBwYXRvcy5jb20ifQ.YgBLtthVeiwSkJ9trXEibNSLOCIq2B02yzti5WTG-2U8dF2hyPrPdopexKqFYRr24I3PfsrSQQwDY8ltCBan9LD--ENmkCGjdPF08P3HAY38v2hP4cz_77WyTP6PqpMdeaNE52zXEpweXfgM_PNTr0yb--uXFLGHJzB23owR4p7F7rDnnRTyL1ntv174C7soCk1d14IuTG4V_dvWqdppCBsOF6sBfc3TqvArcF59w8MLsoA8kiECXnitT9YU94iWOusKnyOemfVHl_oYjSmQiK6EMg_0djgqYmx7Rd92c5Ca5attC_P4c7ELjdlLCcWSDOYmYV1Vr3auRi3frbPIxA' \
   -d '{"nombre":"Pato Casado","descripcion":"Arroz, frijoles, maduro, ensalada y proteina","precio":4500}'
 ```
 
@@ -181,7 +178,6 @@ Actualizar:
 ```bash
 curl -X PATCH http://localhost:2000/paTOSrest/platillos/1 \
   -H 'Content-Type: application/json' \
-  -H 'Authorization: Bearer TU_TOKEN_AQUI' \
   -d '{"nombre":"Pato Actualizado"}'
 ```
 
@@ -203,7 +199,7 @@ Luego abrir:
 http://localhost:8080
 ```
 
-Keycloak se inicia con `quay.io/keycloak/keycloak:26.7.4`, `KC_HEALTH_ENABLED=true`, `KC_HOSTNAME` tomado del `ConfigMap` e importa el realm existente con `start-dev --import-realm`.
+Keycloak se inicia con `quay.io/keycloak/keycloak:26.7.4`, `KC_HEALTH_ENABLED=true` e importa el realm existente con `start-dev --import-realm`.
 
 Nota: al inspeccionar el codigo actual de la API, solo se encontraron variables `APP_DB_*` y `APP_PORT`; no hay variables OIDC/JWT ni middleware de validacion de tokens en `src/`. Esta migracion conserva el comportamiento existente y despliega Keycloak igual que Compose, sin reescribir la aplicacion.
 
