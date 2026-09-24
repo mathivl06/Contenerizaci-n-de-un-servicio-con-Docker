@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: patos-api
+  labels:
+    app.kubernetes.io/name: patos-api
+    app.kubernetes.io/component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: patos-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: patos-api
+        app.kubernetes.io/component: api
+    spec:
+      initContainers:
+        - name: wait-for-migrations
+          image: postgres:18
+          env:
+            - name: APP_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_DB_HOST
+            - name: APP_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_DB_PORT
+            - name: APP_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_DB
+            - name: APP_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: patos-secret
+                  key: APP_DB_USER
+            - name: APP_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patos-secret
+                  key: APP_DB_PASSWORD
+          command:
+            - sh
+            - -c
+            - |
+              until PGPASSWORD="$APP_DB_PASSWORD" psql -h "$APP_DB_HOST" -p "$APP_DB_PORT" -U "$APP_DB_USER" -d "$APP_DB" -tAc "SELECT to_regclass('public.platillos') IS NOT NULL" | grep -q t; do
+                echo "Esperando migraciones de Flyway..."
+                sleep 3
+              done
+      containers:
+        - name: patos-api
+          image: patos-rest-api:1
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 2000
+          env:
+            - name: APP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_PORT
+            - name: APP_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_DB_HOST
+            - name: APP_DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_DB_PORT
+            - name: APP_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: APP_DB
+            - name: APP_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: patos-secret
+                  key: APP_DB_USER
+            - name: APP_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: patos-secret
+                  key: APP_DB_PASSWORD
+          livenessProbe:
+            httpGet:
+              path: /paTOSrest/health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /paTOSrest/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6

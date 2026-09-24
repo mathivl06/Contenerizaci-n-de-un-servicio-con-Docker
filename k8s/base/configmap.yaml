@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: patos-config
+data:
+  APP_PORT: "2000"
+  APP_DB_HOST: postgres
+  APP_DB_PORT: "5432"
+  APP_DB: restauranteDB
+  POSTGRES_DB: restauranteDB
+  POSTGRES_PORT: "5432"
+  PG_DATA: /var/lib/postgresql/18/docker
+  PGDATA: /var/lib/postgresql/18/docker
+  KC_HEALTH_ENABLED: "true"
