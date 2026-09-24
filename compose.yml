@@ -54,14 +54,14 @@ services:
       KC_HEALTH_ENABLED: "true"
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
     ports:
-      - "8080:8080"
+      - "${KEYCLOAK_PORT}:${KEYCLOAK_PORT}"
     command: start-dev --import-realm
     volumes:
       - ./keycloak:/opt/keycloak/data/import:ro
     networks:
       - restaurant-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health/ready || exit 1"]
+      test: ["CMD-SHELL", "{ printf 'HEAD /health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -82,7 +82,7 @@ services:
       flyway:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${APP_PORT}/paTOSrest/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -91,7 +91,24 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     networks:
-      - restaurant-network  
+      - restaurant-network
+  test-runner:
+    image: patos-rest-api:1-test-runner
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      APP_URL: http://app:${APP_PORT}
+      KEYCLOAK_URL: http://${KEYCLOAK_HOSTNAME}:${KEYCLOAK_PORT}
+    depends_on: 
+      app:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - restaurant-network
+    profiles:
+      - test  
 volumes:
   restaurant-db-volume:
     name: restaurant-db-volume
