@@ -188,7 +188,3 @@ El usuario `paTOSadmin` posee el rol `patos_admin`, por lo que la solicitud resp
 
 Después de crear un platillo, detenga y vuelva a levantar los servicios sin eliminar los volúmenes:
 
-```bash
-docker compose down
-docker compose up --build
-```
