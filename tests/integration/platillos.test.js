@@ -54,7 +54,7 @@ test("POST de un platillo responde correctamente", async () => {
 test("DELETE /platillos/id responde correctamente", async () => {
 
     const response = await request(app)
-        .delete("/paTOSrest/platillos/9");
+        .delete("/paTOSrest/platillos/37");
 
     expect(response.status).toBe(204);
     //console.log(response.body)
