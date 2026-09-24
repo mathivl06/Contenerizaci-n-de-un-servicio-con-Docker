@@ -13,3 +13,5 @@ data:
   PGDATA: /var/lib/postgresql/18/docker
   KC_HEALTH_ENABLED: "true"
   KEYCLOAK_HOSTNAME: localhost
+  KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+  KEYCLOAK_ISSUER: http://localhost:8080

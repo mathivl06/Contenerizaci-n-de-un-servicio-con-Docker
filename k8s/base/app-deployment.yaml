@@ -91,6 +91,16 @@ spec:
                 secretKeyRef:
                   name: patos-secret
                   key: APP_DB_PASSWORD
+            - name: KEYCLOAK_INTERNAL_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: KEYCLOAK_INTERNAL_URL
+            - name: KEYCLOAK_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: patos-config
+                  key: KEYCLOAK_ISSUER
           livenessProbe:
             httpGet:
               path: /paTOSrest/health

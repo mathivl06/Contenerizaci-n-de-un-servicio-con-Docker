@@ -66,12 +66,12 @@ No se versionan credenciales reales. La plantilla esta en `k8s/base/secret.examp
 ```bash
 kubectl create secret generic patos-secret \
   --namespace patos-rest \
-  --from-literal=POSTGRES_USER='CAMBIAR' \
-  --from-literal=POSTGRES_PASSWORD='CAMBIAR' \
-  --from-literal=APP_DB_USER='CAMBIAR' \
-  --from-literal=APP_DB_PASSWORD='CAMBIAR' \
-  --from-literal=KEYCLOAK_ADMIN_USERNAME='CAMBIAR' \
-  --from-literal=KEYCLOAK_ADMIN_PASSWORD='CAMBIAR'
+  --from-literal=POSTGRES_USER='paTOS' \
+  --from-literal=POSTGRES_PASSWORD='paTOrestaurante!1' \
+  --from-literal=APP_DB_USER='paTOS' \
+  --from-literal=APP_DB_PASSWORD='paTOrestaurante!1' \
+  --from-literal=KEYCLOAK_ADMIN_USERNAME='paTOS' \
+  --from-literal=KEYCLOAK_ADMIN_PASSWORD='paTOS'
 ```
 
 Para este proyecto, `APP_DB_USER` y `APP_DB_PASSWORD` deben coincidir con `POSTGRES_USER` y `POSTGRES_PASSWORD`, porque la API se conecta a la misma base de datos creada por PostgreSQL.
@@ -98,6 +98,7 @@ kubectl create configmap keycloak-realm \
 ```
 
 `flyway-sql` monta las migraciones en `/flyway/sql`. `keycloak-realm` monta `realm-export.json` en `/opt/keycloak/data/import`, igual que Compose.
+La API usa dos direcciones de Keycloak: `KEYCLOAK_INTERNAL_URL` (`http://keycloak:8080`) para descargar las claves JWKS desde la red interna del cluster y `KEYCLOAK_ISSUER` (`http://localhost:8080`) para comparar el claim `iss` de los tokens emitidos al acceder por `kubectl port-forward`. Ambas quedan definidas en `k8s/base/configmap.yaml`.
 
 ## 6. Aplicar Kustomize
 
