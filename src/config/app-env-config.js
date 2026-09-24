@@ -22,5 +22,6 @@ const appEnvConfig = {
 };
 
 module.exports = {
+    requiredEnv,
     appEnvConfig
 };
